@@ -27,36 +27,19 @@ router.get('/', (req, res) => {
     })
   })
 })
-
+//Hubiera sido bueno separar estos metodos largos en otro archivo de "Servicios". Así se tiene un poco más desacoplada la app, y este espacio se enfoca únicamente en el enrutamiento y la llamada a la bd
 router.post('/login', (req, res) => {
   mongoClient.connect('mongodb://node:node@ds036967.mlab.com:36967/speak-your-mind', (err, db) => {
     if (err) throw err
     let existenceQuery = { email: req.body.email }
-    db.collection('users').find(existenceQuery).toArray((err, result) => {
-      if (err) throw err
-      if (result.length === 0) res.sendStatus(460)
-      else {
-        let user = result[0]
-        let salt = user.salt
-        let savedHash = user.hash
-        let hash = crypto.pbkdf2Sync(req.body.password, salt, 1000, 64, 'sha1').toString('hex')
-        if (hash !== savedHash) res.sendStatus(401)
-        else {
-          var expiry = new Date()
-          expiry.setDate(expiry.getDate() + 7)
-          db.close()
-          res.status(200)
-          res.send(jwt.sign({
-            _id: user._id,
-            email: user.email,
-            exp: parseInt(expiry.getTime() / 1000)
-          }, 'MY_SECRET'))
-        }
-      }
-    })
+    res = User.loginUser(existenceQuery);
+    if(res == "404")
+       //mandar response de error
+     else
+       //mandar respuesta correcta
   })
 })
-
+//igual para este
 router.post('/', (req, res) => {
   mongoClient.connect('mongodb://node:node@ds036967.mlab.com:36967/speak-your-mind', (err, db) => {
     if (err) throw err
